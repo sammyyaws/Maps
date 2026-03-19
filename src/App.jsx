@@ -2,14 +2,14 @@ import { useState, useEffect } from 'react'
 import MapView from './components/MapView'
 import ControlCards from './ControlCards'
 import "./config/leaflet"
-
+import NameCard from './NameCard'
 
 function App() {
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
   const [savedLocations, setSavedLocations] = useState([])
-
-  // 📍 GPS tracking
+ const [showNameCard,setShowNameCard]=useState(false)
+  //GPS tracking
   useEffect(() => {
     if (!navigator.geolocation) {
       alert("turn on your location in settings");
@@ -36,13 +36,33 @@ function App() {
     return () => navigator.geolocation.clearWatch(watchId)
   }, [])
 
-  //  PIN FUNCTION
-  const handlePinLocation = () => {
-    if (!position) return;
+  //  location saving FUNCTION
+ const handleSaveLocation = (name) => {
+if (!position) {
+  return (
+    <div className="flex items-center justify-center h-screen">
+      <div className="text-lg font-semibold">
+        Getting your location...
+      </div>
+    </div>
+  );
+}
+  const newLocation = {
+    name,
+    coords: position
+  };
 
-    setSavedLocations((prev) => [...prev, position]);
-    console.log("Pinned:", position);
+  setSavedLocations((prev) => [...prev, newLocation]);
+};
+  //name card
+  const handleNameCard=()=>{
+    setShowNameCard(true);
   }
+
+
+
+
+
 
   if (!position) {
     return <div>Getting your location...</div>;
@@ -63,8 +83,9 @@ function App() {
 
       {/* Controls */}
       <div className='flex w-full p-4'>
-        <ControlCards handlePinLocation={handlePinLocation} />
+        <ControlCards handleClick={handleNameCard} />
       </div>
+      {showNameCard&&(<NameCard handleSaveLocation={handleSaveLocation}  showNameCard={setShowNameCard}/>)}
 
     </div>
   )
