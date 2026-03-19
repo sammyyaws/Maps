@@ -1,21 +1,72 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import MapView from './components/MapView'
 import ControlCards from './ControlCards'
-function App() {
+import "./config/leaflet"
 
+
+function App() {
+  const [position, setPosition] = useState(null)
+  const [path, setPath] = useState([])
+  const [savedLocations, setSavedLocations] = useState([])
+
+  // 📍 GPS tracking
+  useEffect(() => {
+    if (!navigator.geolocation) {
+      alert("turn on your location in settings");
+      return;
+    }
+
+    const watchId = navigator.geolocation.watchPosition(
+      (pos) => {
+        const newPos = [pos.coords.latitude, pos.coords.longitude];
+        setPosition(newPos);
+        setPath((prev) => [...prev, newPos])
+      },
+      (err) => {
+        if (err.code === 1) alert("Please allow location access on your phone");
+        else console.error(err);
+      },
+      {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 5000
+      }
+    );
+
+    return () => navigator.geolocation.clearWatch(watchId)
+  }, [])
+
+  //  PIN FUNCTION
+  const handlePinLocation = () => {
+    if (!position) return;
+
+    setSavedLocations((prev) => [...prev, position]);
+    console.log("Pinned:", position);
+  }
+
+  if (!position) {
+    return <div>Getting your location...</div>;
+  }
 
   return (
-    <>
     <div className='flex flex-col w-full min-h-screen'>
-      <div className="flex bg-emerald-600 items-center justify-center w-full shadow-md md:h-16 h-8">
-      <div className='text-white font-bold md:text-2xl text-xl'>MAPOUT</div>
+
+      {/* Header */}
+      <div className="flex bg-emerald-600 items-center justify-center w-full shadow-md md:h-16 h-10">
+        <div className='text-white font-bold md:text-2xl text-xl'>MAPOUT</div>
       </div>
-      {/**map layer */}
-      <div className='flex items-center justify-center border-2   border-white shadow-md shadow-black flex-col w-full '>
-    <MapView/></div>
-    <ControlCards/>
+
+      {/* Map */}
+      <div className=' flex w-full border-2 border-white shadow-2xl'>
+        <MapView path={path} position={position} savedLocations={savedLocations} />
+      </div>
+
+      {/* Controls */}
+      <div className='flex w-full p-4'>
+        <ControlCards handlePinLocation={handlePinLocation} />
+      </div>
+
     </div>
-    </>
   )
 }
 
