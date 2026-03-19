@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import MapView from './components/MapView'
-
+import ControlCards from './ControlCards'
 function App() {
 
 
@@ -11,8 +11,9 @@ function App() {
       <div className='text-white font-bold md:text-2xl text-xl'>MAPOUT</div>
       </div>
       {/**map layer */}
-      <div className='flex items-center justify-center border-2 mx-6  border-white shadow-md shadow-black flex-col w-1/2 h-2/3'>
+      <div className='flex items-center justify-center border-2   border-white shadow-md shadow-black flex-col w-full '>
     <MapView/></div>
+    <ControlCards/>
     </div>
     </>
   )
