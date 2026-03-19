@@ -1,4 +1,4 @@
-import { MapContainer, TileLayer, Polyline, Marker, CircleMarker} from 'react-leaflet';
+import { MapContainer, TileLayer, Polyline, Marker, CircleMarker,Popup} from 'react-leaflet';
 
 function MapView({ path, position, savedLocations }) {
 
@@ -24,9 +24,11 @@ function MapView({ path, position, savedLocations }) {
       )}
 
       {/* pinned locations */}
-      {savedLocations?.map((loc, i) => (
-         <Marker key={i} position={loc} />
-      ))}
+     {savedLocations?.map((loc, i) => (
+  <Marker key={i} position={loc.coords}>
+    <Popup>{loc.name}</Popup>
+  </Marker>
+))}
 
     </MapContainer>
   );
