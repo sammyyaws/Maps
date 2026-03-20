@@ -9,6 +9,7 @@ function App() {
   const [path, setPath] = useState([])
   const [savedLocations, setSavedLocations] = useState([])
  const [showNameCard,setShowNameCard]=useState(false)
+ const[selectLocation,setSelectLocation]=useState([])
   //GPS tracking
   useEffect(() => {
     if (!navigator.geolocation) {
@@ -68,6 +69,18 @@ if (!position) {
     return <div>Getting your location...</div>;
   }
 
+//selection of locations to be used as nodes for the backend
+
+const handleSetSelectedLocation=(loc)=>{
+setSelectLocation((prev)=>{
+if(prev.find(l=>l.name===loc.name)) return prev;
+if(prev.length==2) return [loc];
+
+return [...prev,loc];
+})
+}
+
+
   return (
     <div className='flex flex-col w-full min-h-screen'>
 
@@ -78,12 +91,18 @@ if (!position) {
 
       {/* Map */}
       <div className=' flex w-full border-2 border-white shadow-2xl'>
-        <MapView path={path} position={position} savedLocations={savedLocations} />
+        <MapView path={path} position={position} handleSetSelectedLocation={handleSetSelectedLocation} savedLocations={savedLocations} />
       </div>
 
       {/* Controls */}
-      <div className='flex w-full p-4'>
-        <ControlCards handleClick={handleNameCard} />
+      <div className='flex flex-row w-full p-4'>
+       <div className='flex'><ControlCards handleClick={handleNameCard} /></div> 
+        <div className='flex'>
+  <h3>Selected Locations:</h3>
+  {selectLocation.map((loc, i) => (
+    <div key={i}>{loc.name}</div>
+  ))}
+</div>
       </div>
       {showNameCard&&(<NameCard handleSaveLocation={handleSaveLocation}  showNameCard={setShowNameCard}/>)}
 
