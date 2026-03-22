@@ -1,6 +1,6 @@
 import { MapContainer, TileLayer, Polyline, Marker, CircleMarker,Popup} from 'react-leaflet';
 
-function MapView({ path, position, savedLocations, handleSetSelectedLocation }) {
+function MapView({ path, position, savedLocations, handleSetSelectedLocation, selectedLocation}) {
 
   return (
     <MapContainer
@@ -23,14 +23,40 @@ function MapView({ path, position, savedLocations, handleSetSelectedLocation }) 
         />
       )}
 
-      {/* pinned locations */}
-     {savedLocations?.map((loc, i) => (
-  <Marker key={i} position={loc.coords}
-  eventHandlers={{click:()=>handleSetSelectedLocation(loc)}}
-  >
-    <Popup>{loc.name}</Popup>
-  </Marker>
-))}
+{selectedLocation.length >= 2 && (
+  <Polyline
+    positions={selectedLocation.map(loc => loc.coords)}
+    pathOptions={{ color: "red", weight: 4 }}
+  />
+)}
+
+      
+
+      {/* saved  locations marker*/}
+  {savedLocations?.map((loc, i) => {
+  const isSelected = selectedLocation?.some(l => l.name === loc.name);
+
+  return (
+    <Marker
+      key={i}
+      position={loc.coords}
+      eventHandlers={{
+        click: () => handleSetSelectedLocation(loc)
+      }}
+    >
+      <Popup>{loc.name}</Popup>
+
+      {/* Highlight selected nodes */}
+      {isSelected && (
+        <CircleMarker
+          center={loc.coords}
+          radius={10}
+          pathOptions={{ color: "red" }}
+        />
+      )}
+    </Marker>
+  );
+})}
 
     </MapContainer>
   );
