@@ -80,14 +80,29 @@ return [...prev,loc];
 })
 }
 
+//track status
+const statusLabel = position ? 'GPS active' : 'GPS unavailable';
+const statusClass = position
+  ? 'bg-white/20 border-white/40 text-white'
+  : 'bg-red-500/80 border-red-400 text-white';
 
   return (
     <div className='flex flex-col w-full min-h-screen'>
 
       {/* Header */}
-      <div className="flex bg-emerald-600 items-center justify-center w-full shadow-md md:h-16 h-10">
-        <div className='text-white font-bold md:text-2xl text-xl'>MAPOUT</div>
-      </div>
+    <header className="topbar flex items-center justify-between w-full px-6 py-3 bg-gradient-to-r from-green-900 via-green-700 to-green-600 shadow-md">
+  <div className="topbar-brand flex flex-col gap-1">
+    <p className="eyebrow text-xs uppercase tracking-wider text-white/80 font-semibold">Campus mapper</p>
+    <h1 className="text-white font-bold text-2xl md:text-3xl leading-tight">MapOut</h1>
+    <p className="text-white/90 text-sm font-medium">KNUST · GPS trails, pins & graph nodes</p>
+  </div>
+<span
+  className={`status-chip px-4 py-2 rounded-full font-semibold text-sm backdrop-blur-md border ${statusClass}`}
+  aria-live="polite"
+>
+  {statusLabel}
+</span>
+</header>
 
       {/* Map */}
       <div className=' flex w-full border-2 border-white shadow-2xl'>
