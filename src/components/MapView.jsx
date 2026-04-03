@@ -6,7 +6,7 @@ function MapView({ path, position, savedLocations, handleSetSelectedLocation, se
     <MapContainer
       center={position}
       zoom={19}
-      style={{ height: "40vh", width: "100%" }}
+      style={{ height: "40vh", width: "98%",}}
       zoomControl={false}
     >
       <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

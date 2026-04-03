@@ -1,4 +1,4 @@
-function ControlCards({ handlePin, handleClear, handleZoom }) {
+function ControlCards({ handleClick }) {
   return (
     <aside className="bg-white rounded-2xl shadow-lg p-5 w-full max-w-xs border border-slate-200">
       <div className="mb-4 border-b pb-2 border-slate-200">
@@ -13,27 +13,26 @@ function ControlCards({ handlePin, handleClear, handleZoom }) {
           <button
             type="button"
             className="w-full rounded-md border border-slate-300 bg-white text-slate-700 font-semibold py-2 hover:bg-slate-100 transition"
-            onClick={handlePin}
+            onClick={handleClick}
           >
             Pin current GPS
           </button>
           <button
             type="button"
             className="w-full rounded-md border border-slate-300 bg-white text-slate-700 font-semibold py-2 hover:bg-slate-100 transition"
-            onClick={handleClear}
+        
           >
             Clear GPS path
           </button>
           <button
             type="button"
             className="w-full rounded-md bg-blue-600 text-white font-semibold py-2 hover:bg-blue-700 transition"
-            onClick={handleZoom}
+          
           >
             Zoom to GPS path
           </button>
         </div>
-        <p className="text-xs text-slate-400">Trail points: 0 {/* Replace with actual count if available */}</p>
-      </div>
+           </div>
     </aside>
   );
 }

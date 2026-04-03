@@ -1,19 +1,27 @@
 import { useState, useEffect } from 'react'
 import MapView from './components/MapView'
-import ControlCards from './ControlCards'
+import ControlCards from './components/ControlCards'
 import "./config/leaflet"
 import NameCard from './NameCard'
-
+import OutputCard from './components/OutputCard'
 function App() {
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
   const [savedLocations, setSavedLocations] = useState([])
- const [showNameCard,setShowNameCard]=useState(false)
- const[selectedLocation,setSelectedLocation]=useState([])
+  const [geoError, setGeoError] = useState(() => {
+    if (typeof navigator !== 'undefined' && !navigator.geolocation) {
+      return 'Geolocation is not supported by this browser.';
+    }
+    return null;
+  })
+  const [retryCount, setRetryCount] = useState(0)
+  const [showNameCard,setShowNameCard]=useState(false)
+  const [selectedLocation,setSelectedLocation]=useState([])
+
+ 
   //GPS tracking
   useEffect(() => {
     if (!navigator.geolocation) {
-      alert("turn on your location in settings");
       return;
     }
 
@@ -21,11 +29,15 @@ function App() {
       (pos) => {
         const newPos = [pos.coords.latitude, pos.coords.longitude];
         setPosition(newPos);
-        setPath((prev) => [...prev, newPos])
+        setPath((prev) => [...prev, newPos]);
+        setGeoError(null);
       },
       (err) => {
-        if (err.code === 1) alert("Please allow location access on your phone");
-        else console.error(err);
+        if (err.code === 1) setGeoError("Permission denied. Please allow location access in your browser settings.");
+        else if (err.code === 2) setGeoError("Location unavailable. Try again from a place with better signal.");
+        else if (err.code === 3) setGeoError("Location request timed out. Try again.");
+        else setGeoError(err.message || "Unknown geolocation error");
+        console.error(err);
       },
       {
         enableHighAccuracy: true,
@@ -35,19 +47,14 @@ function App() {
     );
 
     return () => navigator.geolocation.clearWatch(watchId)
-  }, [])
+  }, [retryCount])
 
   //  location saving FUNCTION
  const handleSaveLocation = (name) => {
-if (!position) {
-  return (
-    <div className="flex items-center justify-center h-screen">
-      <div className="text-lg font-semibold">
-        Getting your location...
-      </div>
-    </div>
-  );
-}
+  if (!position) {
+    alert("Location not ready yet. Wait a moment and ensure geolocation permission is granted.");
+    return;
+  }
   const newLocation = {
     name,
     coords: position
@@ -64,6 +71,20 @@ if (!position) {
 
 
 
+
+  if (geoError) {
+    return (
+      <div className="flex flex-col items-center justify-center h-screen p-4 text-center">
+        <p className="mb-3 text-lg font-semibold text-red-600">{geoError}</p>
+        <button
+          onClick={() => setRetryCount((prev) => prev + 1)}
+          className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+        >
+          Retry Location
+        </button>
+      </div>
+    );
+  }
 
   if (!position) {
     return <div>Getting your location...</div>;
@@ -105,20 +126,27 @@ const statusClass = position
 </header>
 
       {/* Map */}
-      <div className=' flex w-full border-2 border-white shadow-2xl'>
+      <div className=' flex w-full border-2 justify-center  items-center border-white shadow-2xl'>
         <MapView path={path} position={position} handleSetSelectedLocation={handleSetSelectedLocation} savedLocations={savedLocations} selectedLocation={selectedLocation}/>
       </div>
 
       {/* Controls */}
-      <div className='flex flex-row w-full p-4'>
+
+      <div className='flex gap-3 flex-col md:flex-row w-full items-center justify-center p-4'>
        <div className='flex'><ControlCards handleClick={handleNameCard} /></div> 
         <div className='flex'>
-  <h3>Selected Locations:</h3>
-  {selectedLocation.map((loc, i) => (
-    <div key={i}>{loc.name}</div>
-  ))}
+  <OutputCard
+        position={position}
+        path={path}
+        savedLocations={savedLocations}
+        selectedLocation={selectedLocation}
+       
+      />
 </div>
       </div>
+
+      
+
       {showNameCard&&(<NameCard handleSaveLocation={handleSaveLocation}  showNameCard={setShowNameCard}/>)}
 
     </div>
