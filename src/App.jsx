@@ -4,6 +4,7 @@ import ControlCards from './components/ControlCards'
 import "./config/leaflet"
 import NameCard from './NameCard'
 import OutputCard from './components/OutputCard'
+
 function App() {
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
@@ -17,9 +18,59 @@ function App() {
   const [retryCount, setRetryCount] = useState(0)
   const [showNameCard,setShowNameCard]=useState(false)
   const [selectedLocation,setSelectedLocation]=useState([])
+  const [backendUrl, setBackendUrl] = useState('http://127.0.0.1:8000') // Adjust to your backend URL
+  const [backendStatus, setBackendStatus] = useState(null)
+
+  // Function to send a single node to backend
+  const sendNodeToBackend = async (loc) => {
+    if (!loc) {
+      setBackendStatus('No location provided to send');
+      return;
+    }
+
+    const payload = {
+      name: loc.name || 'Unnamed',
+      latitude: loc.coords[0],
+      longitude: loc.coords[1],
+    };
+
+    try {
+      const response = await fetch(`${backendUrl}/nodes`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      const result = await response.json();
+      setBackendStatus(`Node sent: ${result.name || payload.name}, id=${result.id || 'n/a'}`);
+      return result;
+    } catch (error) {
+      setBackendStatus(`Error sending node: ${error.message}`);
+    }
+  };
+
+  // Function to send edges to backend
+  const sendEdgesToBackend = async () => {
+    // Assuming edges are computed from selectedLocation
+    const edges = selectedLocation.slice(1).map((loc, idx) => ({
+      from: selectedLocation[idx].name,
+      to: loc.name,
+      distance: 0 // Placeholder, compute if needed
+    }));
+    try {
+      const response = await fetch(`${backendUrl}/edges`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ edges })
+      });
+      const result = await response.json();
+      setBackendStatus(`Edges sent: ${result.message || 'Success'}`);
+    } catch (error) {
+      setBackendStatus(`Error sending edges: ${error.message}`);
+    }
+  };
 
  
-  //GPS tracking
+  //GPS tracking for path drawing
   useEffect(() => {
     if (!navigator.geolocation) {
       return;
@@ -93,12 +144,14 @@ function App() {
 //selection of locations to be used as nodes for the backend
 
 const handleSetSelectedLocation=(loc)=>{
-setSelectedLocation((prev)=>{
-if(prev.find(l=>l.name===loc.name)) return prev;
-if(prev.length===4) return [loc];
+  const isAlreadySelected = selectedLocation.some(l=>l.name===loc.name);
+  if (isAlreadySelected) return;
 
-return [...prev,loc];
-})
+  const next = selectedLocation.length===4 ? [loc] : [...selectedLocation, loc];
+  setSelectedLocation(next);
+
+  // Automatically send the newly selected node to backend
+  sendNodeToBackend(loc);
 }
 
 //track status
@@ -140,9 +193,14 @@ const statusClass = position
         path={path}
         savedLocations={savedLocations}
         selectedLocation={selectedLocation}
-       
+        backendStatus={backendStatus}
+        backendUrl={backendUrl}
+        setBackendUrl={setBackendUrl}
       />
 </div>
+        <div className='flex flex-col gap-2'>
+          <button onClick={sendEdgesToBackend} className="px-4 py-2 bg-green-500 text-white rounded">Send Edges to Backend</button>
+        </div>
       </div>
 
       

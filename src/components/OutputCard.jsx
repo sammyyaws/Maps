@@ -1,6 +1,6 @@
 import React from 'react'
 
-function OutputCard({ position, path, savedLocations, selectedLocation,  }) {
+function OutputCard({ position, path, savedLocations, selectedLocation, backendStatus,  }) {
   return (
      <aside className="bg-white rounded-2xl shadow-lg p-5 w-full max-w-xs border border-slate-200">
       <div className="mb-4 border-b pb-2 border-slate-200">
@@ -35,6 +35,7 @@ function OutputCard({ position, path, savedLocations, selectedLocation,  }) {
       <div className="bg-slate-50 rounded-lg p-3 border border-slate-100">
         <h3 className="text-sm font-semibold text-slate-700 mb-2">Live path tracker</h3>
         <p className="text-xs text-slate-700">Tracked path points: {path.length}</p>
+        {backendStatus && <p className="text-xs text-slate-700 mt-2">Backend: {backendStatus}</p>}
       </div>
     </aside>
   )
