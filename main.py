@@ -1,5 +1,6 @@
 # Main entry point for the FastAPI application.
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from routes.nodes import router as nodes_router  # Endpoints for node management
 from routes.edges import router as edges_router  # Endpoints for edge management
 from routes.routing import router as routing_router  # Endpoints for routing/shortest path
@@ -7,6 +8,15 @@ from routes.graph_view import router as graph_view_router  # Endpoint for full g
 
 # Create FastAPI app instance
 app = FastAPI()
+
+# Allow CORS for all origins (or set specific origins in allow_origins)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Include routers for different API sections
 app.include_router(nodes_router)

@@ -25,10 +25,3 @@ def get_node(node_id: int):
         raise HTTPException(status_code=404, detail="Node not found")
     return node
 
-# Delete a node by its id
-@router.delete("/nodes/{node_id}")
-def delete_node(node_id: int):
-    if node_id not in graph.nodes:
-        raise HTTPException(status_code=404, detail="Node not found")
-    graph.remove_node(node_id)
-    return {"message": "Node deleted"}
