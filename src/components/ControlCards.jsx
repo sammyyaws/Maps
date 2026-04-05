@@ -1,17 +1,13 @@
 function ControlCards({
-  onDropPin,
-  onClearTrail,
-  onShortestVisit,
-  onTapOrderOnly,
-  onServerShortest,
+  
+ onDropPin,
   position,
   path,
   selectedLocation,
-  backendStatus,
+  
   panelOpen,
   onTogglePanel,
-  routeMode,
-  serverBusy,
+  
 }) {
   const coordStr =
     position?.length === 2
@@ -48,7 +44,7 @@ function ControlCards({
 
             <button
               type="button"
-              onClick={onClearTrail}
+             
               className="min-h-[48px] rounded-2xl border border-slate-200/90 bg-white py-3.5 text-center text-[15px] font-semibold text-slate-800 shadow-sm transition hover:bg-slate-50"
             >
               Clear GPS trail
@@ -73,7 +69,7 @@ function ControlCards({
             <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-3">
               <button
                 type="button"
-                onClick={onShortestVisit}
+                
                 disabled={selectedLocation.length < 2}
                 title="Shortest possible path between your stops (client-side)"
                 className="mapout-btn-shortest min-h-[48px] rounded-2xl px-3 py-2.5 text-center text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
@@ -82,7 +78,7 @@ function ControlCards({
               </button>
               <button
                 type="button"
-                onClick={onTapOrderOnly}
+               
                 disabled={selectedLocation.length < 2}
                 className="min-h-[48px] rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-center text-sm font-semibold text-slate-800 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-40"
               >
@@ -90,26 +86,15 @@ function ControlCards({
               </button>
               <button
                 type="button"
-                onClick={onServerShortest}
-                disabled={selectedLocation.length < 2 || serverBusy}
+                
+                disabled={selectedLocation.length < 2 }
                 className="min-h-[48px] rounded-2xl bg-slate-500 px-3 py-2.5 text-center text-sm font-semibold text-white shadow-sm transition hover:bg-slate-600 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                {serverBusy ? 'Server…' : 'Server shortest path'}
+                 Find shortest path
               </button>
             </div>
-            {backendStatus && (
-              <p className="mt-3 text-xs text-violet-900/70">{backendStatus}</p>
-            )}
-            <p className="mt-2 text-[11px] text-violet-800/60">
-              Route display:{' '}
-              <span className="font-semibold text-violet-800">
-                {routeMode === 'shortest'
-                  ? 'Shortest (client)'
-                  : routeMode === 'server'
-                    ? 'Server path'
-                    : 'Tap order'}
-              </span>
-            </p>
+            
+           
           </div>
         </div>
         </div>

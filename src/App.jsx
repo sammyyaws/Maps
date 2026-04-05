@@ -1,32 +1,16 @@
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useEffect,  } from 'react'
 import MapView from './components/MapView'
 import ControlCards from './components/ControlCards'
 import './config/leaflet'
 import NameCard from './NameCard'
+import { sendNodeToBackend,backendUrl} from './Api'
 
-function nearestNeighborOrder(locations) {
-  if (locations.length <= 1) return locations
-  const remaining = locations.map((l) => ({ ...l }))
-  const ordered = [remaining.shift()]
-  while (remaining.length) {
-    const last = ordered[ordered.length - 1].coords
-    let bestIdx = 0
-    let bestD = Infinity
-    remaining.forEach((p, i) => {
-      const d = (p.coords[0] - last[0]) ** 2 + (p.coords[1] - last[1]) ** 2
-      if (d < bestD) {
-        bestD = d
-        bestIdx = i
-      }
-    })
-    ordered.push(remaining.splice(bestIdx, 1)[0])
-  }
-  return ordered
-}
+
 
 function App() {
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
+  
   const [savedLocations, setSavedLocations] = useState([])
   const [geoError, setGeoError] = useState(() => {
     if (typeof navigator !== 'undefined' && !navigator.geolocation) {
@@ -37,35 +21,22 @@ function App() {
   const [retryCount, setRetryCount] = useState(0)
   const [showNameCard, setShowNameCard] = useState(false)
   const [selectedLocation, setSelectedLocation] = useState([])
-  const [backendUrl] = useState('http://127.0.0.1:8000')
-  const [backendStatus, setBackendStatus] = useState(null)
+ 
   const [panelOpen, setPanelOpen] = useState(true)
-  const [routeMode, setRouteMode] = useState('tap')
-  const [serverOrderedLocations, setServerOrderedLocations] = useState(null)
-  const [serverBusy, setServerBusy] = useState(false)
+  
 
-  const sendNodeToBackend = async (loc) => {
-    const payload = {
-      name: loc.name || 'Unnamed',
-      latitude: loc.coords[0],
-      longitude: loc.coords[1],
-    }
-    const response = await fetch(`${backendUrl}/nodes`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
-    if (!response.ok) {
-      const t = await response.text()
-      throw new Error(t || `HTTP ${response.status}`)
-    }
-    return response.json()
-  }
+  
 
+
+
+  // start of getting gps with use effect
   useEffect(() => {
     if (!navigator.geolocation) {
       return
     }
+    // fetch an edge on change the ui
+    
+    
 
     const watchId = navigator.geolocation.watchPosition(
       (pos) => {
@@ -94,7 +65,9 @@ function App() {
 
     return () => navigator.geolocation.clearWatch(watchId)
   }, [retryCount])
+//end of getting gps
 
+// save location part
   const handleSaveLocation = (name) => {
     if (!position) {
       alert(
@@ -109,104 +82,42 @@ function App() {
     setSavedLocations((prev) => [...prev, newLocation])
   }
 
+
+  //location selection pins
   const handleSetSelectedLocation = async (loc) => {
-    const isAlreadySelected = selectedLocation.some((l) => l.name === loc.name)
-    if (isAlreadySelected) return
+  const isAlreadySelected = selectedLocation.some((l) => l.name === loc.name)
+  if (isAlreadySelected) return
 
-    let backendId = null
-    try {
-      const backendNode = await sendNodeToBackend(loc)
-      backendId = backendNode?.id ?? null
-    } catch (e) {
-      console.warn('Backend node skipped:', e)
-      setBackendStatus(`Nodes API offline — pins still work locally.`)
-    }
-
-    const newLoc = {
-      ...loc,
-      backendId,
-    }
-
-    const next =
-      selectedLocation.length === 4 ? [newLoc] : [...selectedLocation, newLoc]
-
-    setSelectedLocation(next)
-    setRouteMode('tap')
-    setServerOrderedLocations(null)
+  let backendId = null
+  try {
+    const backendNode = await sendNodeToBackend(loc)
+    backendId = backendNode?.id ?? null
+  } catch (e) {
+    console.warn('Backend node skipped:', e)
   }
 
-  const routeLinePositions = useMemo(() => {
-    if (selectedLocation.length < 2) return null
-    let order = selectedLocation
-    if (routeMode === 'shortest') {
-      order = nearestNeighborOrder(selectedLocation)
-    } else if (routeMode === 'server' && serverOrderedLocations?.length) {
-      order = serverOrderedLocations
-    }
-    return order.map((l) => l.coords)
-  }, [selectedLocation, routeMode, serverOrderedLocations])
+  const newLoc = { ...loc, backendId }
 
-  const onClearTrail = useCallback(() => setPath([]), [])
-  const onShortestVisit = useCallback(() => {
-    setRouteMode('shortest')
-    setServerOrderedLocations(null)
-  }, [])
-  const onTapOrderOnly = useCallback(() => {
-    setRouteMode('tap')
-    setServerOrderedLocations(null)
-  }, [])
+  //  create edge with previous node
+  if (selectedLocation.length > 0) {
+    const last = selectedLocation[selectedLocation.length - 1]
 
-  const onServerShortest = useCallback(async () => {
-    if (selectedLocation.length < 2) return
-    setServerBusy(true)
-    setBackendStatus(null)
-    try {
-      const res = await fetch(`${backendUrl}/shortest-path`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          stops: selectedLocation.map((l) => ({
-            name: l.name,
-            lat: l.coords[0],
-            lng: l.coords[1],
-          })),
-        }),
+    await fetch(`${backendUrl}/edges`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: last.backendId,
+        target: backendId,
+        weight:1
       })
-      const raw = await res.text()
-      let data = {}
-      try {
-        data = raw ? JSON.parse(raw) : {}
-      } catch {
-        throw new Error('Server did not return JSON.')
-      }
-      if (!res.ok) throw new Error(data.detail || raw || `HTTP ${res.status}`)
+    })
+  }
 
-      let ordered = null
-      if (Array.isArray(data.order)) {
-        const byName = Object.fromEntries(selectedLocation.map((l) => [l.name, l]))
-        ordered = data.order.map((n) => byName[n]).filter(Boolean)
-      } else if (Array.isArray(data.ordered_stops)) {
-        ordered = data.ordered_stops
-      } else if (Array.isArray(data.path) && data.path[0]?.lat !== undefined) {
-        ordered = data.path.map((p, i) => ({
-          name: `stop-${i}`,
-          coords: [p.lat, p.lng ?? p.lon],
-        }))
-      }
+  setSelectedLocation((prev) => [...prev, newLoc])
+}
 
-      if (ordered?.length >= 2) {
-        setServerOrderedLocations(ordered)
-        setRouteMode('server')
-        setBackendStatus('Server path applied.')
-      } else {
-        setBackendStatus('Server replied but no usable order/path field found.')
-      }
-    } catch (e) {
-      setBackendStatus(e.message || 'Server shortest path failed.')
-    } finally {
-      setServerBusy(false)
-    }
-  }, [backendUrl, selectedLocation])
+
+  
 
   if (geoError) {
     return (
@@ -247,7 +158,7 @@ function App() {
           handleSetSelectedLocation={handleSetSelectedLocation}
           savedLocations={savedLocations}
           selectedLocation={selectedLocation}
-          routeLinePositions={routeLinePositions}
+      
         />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] flex justify-start p-4">
@@ -265,18 +176,14 @@ function App() {
 
       <ControlCards
         onDropPin={() => setShowNameCard(true)}
-        onClearTrail={onClearTrail}
-        onShortestVisit={onShortestVisit}
-        onTapOrderOnly={onTapOrderOnly}
-        onServerShortest={onServerShortest}
+      
         position={position}
         path={path}
         selectedLocation={selectedLocation}
-        backendStatus={backendStatus}
         panelOpen={panelOpen}
         onTogglePanel={() => setPanelOpen((o) => !o)}
-        routeMode={routeMode}
-        serverBusy={serverBusy}
+       
+        
       />
 
       {showNameCard && (
