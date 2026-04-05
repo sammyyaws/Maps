@@ -1,1 +1,89 @@
 @import "tailwindcss";
+
+:root {
+  /* Reference: vibrant map-app green */
+  --mapout-green: #00a86b;
+  --mapout-green-hover: #009162;
+  --mapout-green-soft: #e6f7f1;
+  --mapout-surface: #f3f6f8;
+  /* Shortest-route accent (light purple button) */
+  --mapout-route-primary: #b49cf8;
+  --mapout-route-primary-hover: #a78bee;
+  --mapout-route-box: #f3effe;
+  --mapout-route-border: #e4d9fc;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    Ubuntu,
+    Cantarell,
+    Noto Sans,
+    sans-serif;
+  background: var(--mapout-surface);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+.mapout-leaflet.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #e8eef3;
+  font-family: inherit;
+}
+
+.mapout-pin-icon {
+  background: transparent;
+  border: none;
+}
+
+.mapout-pin-wrap {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.mapout-pin-dot {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 9px;
+  height: 9px;
+  background: var(--mapout-green);
+  border-radius: 999px;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.25);
+}
+
+.mapout-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
+}
+
+.mapout-popup .leaflet-popup-content {
+  margin: 10px 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.mapout-btn-shortest {
+  background: var(--mapout-route-primary);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.28);
+}
+
+.mapout-btn-shortest:hover:not(:disabled) {
+  background: var(--mapout-route-primary-hover);
+}
