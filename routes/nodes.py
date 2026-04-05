@@ -25,3 +25,16 @@ def get_node(node_id: int):
         raise HTTPException(status_code=404, detail="Node not found")
     return node
 
+#get all reachable nodes
+@router.get("/nodes/{node_id}/reachable")
+def reachable_nodes(node_id: int):
+    if node_id not in graph.nodes:
+        raise HTTPException(status_code=404, detail="Node not found")
+
+    reachable = graph.get_reachable_nodes(node_id)
+
+    return {
+        "start_node": node_id,
+        "reachable_nodes": reachable
+    }
+    

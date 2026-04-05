@@ -25,11 +25,3 @@ def get_node_edges(node_id: int):
     if node_id not in graph.nodes:
         raise HTTPException(status_code=404, detail="Node not found")
     return graph.get_node_edges(node_id)
-
-# Delete an edge by its id
-@router.delete("/edges/{edge_id}")
-def delete_edge(edge_id: int):
-    if edge_id not in graph.edges:
-        raise HTTPException(status_code=404, detail="Edge not found")
-    graph.remove_edge(edge_id)
-    return {"message": "Edge deleted"}

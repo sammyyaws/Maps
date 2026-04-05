@@ -1,6 +1,6 @@
 from typing import Dict, List, Tuple, Optional
 from models import Node, Edge
-
+from collections import deque
 # In-memory graph data structure for managing nodes and edges
 class Graph:
     def __init__(self):
@@ -71,6 +71,64 @@ class Graph:
                 if neighbor not in visited:
                     heapq.heappush(queue, (cost + weight, neighbor, path))
         return [], float('inf')
+    
+    # bfs  reachable nodes
+    def get_reachable_nodes(self, start: int):
+     visited = set()
+     queue = deque([start])
 
+     reachable = []
+
+     while queue:
+        node = queue.popleft()
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        reachable.append(node)
+
+        for neighbor, _ in self.adjacency.get(node, []):
+            if neighbor not in visited:
+                queue.append(neighbor)
+
+     return reachable
+#traversals
+    def bfs_traversal(self, start: int):
+     visited = set()
+     queue = deque([start])
+     order = []
+
+     while queue:
+        node = queue.popleft()
+
+        if node in visited:
+            continue
+
+        visited.add(node)
+        order.append(node)
+
+        for neighbor, _ in self.adjacency.get(node, []):
+            if neighbor not in visited:
+                queue.append(neighbor)
+
+     return order
+ # dfs traversal part
+    def dfs_traversal(self, start: int):
+     visited = set()
+     order = []
+
+     def dfs(node: int):
+        if node in visited:
+            return
+
+        visited.add(node)
+        order.append(node)
+
+        for neighbor, _ in self.adjacency.get(node, []):
+            dfs(neighbor)
+
+     dfs(start)
+     return order
 # Singleton instance of the graph used throughout the app
 graph = Graph()
