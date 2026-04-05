@@ -23,30 +23,22 @@ function App() {
 
   // Function to send a single node to backend
   const sendNodeToBackend = async (loc) => {
-    if (!loc) {
-      setBackendStatus('No location provided to send');
-      return;
-    }
-
-    const payload = {
-      name: loc.name || 'Unnamed',
-      latitude: loc.coords[0],
-      longitude: loc.coords[1],
-    };
-
-    try {
-      const response = await fetch(`${backendUrl}/nodes`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-      const result = await response.json();
-      setBackendStatus(`Node sent: ${result.name || payload.name}, id=${result.id || 'n/a'}`);
-      return result;
-    } catch (error) {
-      setBackendStatus(`Error sending node: ${error.message}`);
-    }
+  const payload = {
+    name: loc.name || 'Unnamed',
+    latitude: loc.coords[0],
+    longitude: loc.coords[1],
   };
+
+  const response = await fetch(`${backendUrl}/nodes`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  const result = await response.json();
+
+  return result; // includes id
+};
 
   // Function to send edges to backend
   const sendEdgesToBackend = async () => {
@@ -143,16 +135,25 @@ function App() {
 
 //selection of locations to be used as nodes for the backend
 
-const handleSetSelectedLocation=(loc)=>{
-  const isAlreadySelected = selectedLocation.some(l=>l.name===loc.name);
+const handleSetSelectedLocation = async (loc) => {
+  const isAlreadySelected = selectedLocation.some(l => l.name === loc.name);
   if (isAlreadySelected) return;
 
-  const next = selectedLocation.length===4 ? [loc] : [...selectedLocation, loc];
-  setSelectedLocation(next);
+  // send to backend FIRST
+  const backendNode = await sendNodeToBackend(loc);
 
-  // Automatically send the newly selected node to backend
-  sendNodeToBackend(loc);
-}
+  const newLoc = {
+    ...loc,
+    backendId: backendNode.id   //  store ID
+  };
+
+  const next =
+    selectedLocation.length === 4
+      ? [newLoc]
+      : [...selectedLocation, newLoc];
+
+  setSelectedLocation(next);
+};
 
 //track status
 const statusLabel = position ? 'GPS active' : 'GPS unavailable';
