@@ -23,10 +23,19 @@
   }
 
 
- //function to fetch  edges 
+ //function to create an  edges 
 
- export  const fetchEdges = async () => {
-  const res = await fetch("http://127.0.0.1:8000/edges")
-  if (!res.ok) throw new Error("Failed to fetch edges")
+ export const createEdge = async (source, target, weight = 1) => {
+  const res = await fetch(`${backendUrl}/edges`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ source, target, weight }),
+  })
+
+  if (!res.ok) {
+    const t = await res.text()
+    throw new Error(t || `HTTP ${res.status}`)
+  }
+
   return res.json()
 }

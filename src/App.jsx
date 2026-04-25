@@ -7,7 +7,7 @@ import MapView from './components/MapView'
 import ControlCards from './components/ControlCards'
 import './config/leaflet'
 import NameCard from './NameCard'
-import { sendNodeToBackend,backendUrl} from './Api'
+import { sendNodeToBackend,createEdge} from './Api'
 
 
 
@@ -38,7 +38,7 @@ function App() {
     if (!navigator.geolocation) {
       return
     }
-    // fetch an edge on change the ui
+   
     
     
 
@@ -103,19 +103,17 @@ function App() {
   const newLoc = { ...loc, backendId }
 
   //  create edge with previous node
-  if (selectedLocation.length > 0) {
-    const last = selectedLocation[selectedLocation.length - 1]
+if (selectedLocation.length > 0) {
+  const last = selectedLocation[selectedLocation.length - 1]
 
-    await fetch(`${backendUrl}/edges`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        source: last.backendId,
-        target: backendId,
-        weight:1
-      })
-    })
+  if (last.backendId && backendId) {
+    try {
+      await createEdge(last.backendId, backendId, 1)
+    } catch (e) {
+      console.warn("Edge creation failed:", e)
+    }
   }
+}
 
   setSelectedLocation((prev) => [...prev, newLoc])
 }
