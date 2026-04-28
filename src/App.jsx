@@ -15,7 +15,10 @@ function App() {
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
   
-  const [savedLocations, setSavedLocations] = useState([])
+ const [savedLocations, setSavedLocations] = useState(() => {
+  const stored = localStorage.getItem("savedLocations")
+  return stored ? JSON.parse(stored) : []
+})
   const [geoError, setGeoError] = useState(() => {
     if (typeof navigator !== 'undefined' && !navigator.geolocation) {
       return 'Geolocation is not supported by this browser.'
@@ -71,20 +74,26 @@ function App() {
   }, [retryCount])
 //end of getting gps
 
+
+
+
 // save location part
   const handleSaveLocation = (name) => {
-    if (!position) {
-      alert(
-        'Location not ready yet. Wait a moment and ensure geolocation permission is granted.'
-      )
-      return
-    }
-    const newLocation = {
-      name,
-      coords: position,
-    }
-    setSavedLocations((prev) => [...prev, newLocation])
+  if (!position) return
+
+  const newLocation = {
+    name,
+    coords: position,
   }
+
+  const updatedLocations = [...savedLocations, newLocation]
+
+  // update React state
+  setSavedLocations(updatedLocations)
+
+  // save to localStorage
+  localStorage.setItem("savedLocations", JSON.stringify(updatedLocations))
+}
 
 
   //location selection pins
