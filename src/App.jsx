@@ -78,7 +78,7 @@ function App() {
 
 
 // save location part
-  const handleSaveLocation = (name) => {
+  const handleSaveLocation = async (name) => {
   if (!position) return
 
   const newLocation = {
@@ -86,47 +86,40 @@ function App() {
     coords: position,
   }
 
-  const updatedLocations = [...savedLocations, newLocation]
+  try {
+    const backendNode = await sendNodeToBackend(newLocation)
 
-  // update React state
-  setSavedLocations(updatedLocations)
+    const locationWithId = {
+      ...newLocation,
+      backendId: backendNode.id,
+    }
 
-  // save to localStorage
-  localStorage.setItem("savedLocations", JSON.stringify(updatedLocations))
+    const updated = [...savedLocations, locationWithId]
+
+    setSavedLocations(updated)
+    localStorage.setItem("savedLocations", JSON.stringify(updated))
+
+  } catch (err) {
+    console.error("Failed to save node:", err)
+  }
 }
 
-
-  //location selection pins
-  const handleSetSelectedLocation = async (loc) => {
-  const isAlreadySelected = selectedLocation.some((l) => l.name === loc.name)
+const handleSetSelectedLocation = async (loc) => {
+  const isAlreadySelected = selectedLocation.some(
+    (l) => l.backendId === loc.backendId
+  )
   if (isAlreadySelected) return
 
-  let backendId = null
-  try {
-    const backendNode = await sendNodeToBackend(loc)
-    backendId = backendNode?.id ?? null
-  } catch (e) {
-    console.warn('Backend node skipped:', e)
-  }
+  if (selectedLocation.length > 0) {
+    const last = selectedLocation[selectedLocation.length - 1]
 
-  const newLoc = { ...loc, backendId }
-
-  //  create edge with previous node
-if (selectedLocation.length > 0) {
-  const last = selectedLocation[selectedLocation.length - 1]
-
-  if (last.backendId && backendId) {
-    try {
-      await createEdge(last.backendId, backendId, 1)
-    } catch (e) {
-      console.warn("Edge creation failed:", e)
+    if (last.backendId && loc.backendId) {
+      await createEdge(last.backendId, loc.backendId, 1)
     }
   }
-}
 
-  setSelectedLocation((prev) => [...prev, newLoc])
+  setSelectedLocation((prev) => [...prev, loc])
 }
-
 
   
 

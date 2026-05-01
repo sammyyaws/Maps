@@ -1,6 +1,6 @@
  
  
- export const backendUrl = 'http://127.0.0.1:8000'
+ export const backendUrl = 'https://mapsbackend-okiq.onrender.com'
 
 
 //function to get the data from  the backend
