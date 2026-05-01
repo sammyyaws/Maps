@@ -64,7 +64,7 @@ function MapView({
   savedLocations,
   handleSetSelectedLocation,
   selectedLocation,
-  routeLinePositions,
+  routeLinePositions ,
 }) {
 
   const getIcon=(id) => {

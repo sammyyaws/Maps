@@ -34,11 +34,18 @@ const [visitedNodes, setVisitedNodes] = useState([])
   const [selectedLocation, setSelectedLocation] = useState([])
  
   const [panelOpen, setPanelOpen] = useState(true)
-  
-const runTraversal = async (startId, type) => {
+  const runTraversal = async (startId, type) => {
   const res = type === "bfs" ? await getBFS(startId) : await getDFS(startId)
 
-  const order = type === "bfs" ? res.bfs_order : res.dfs_order
+  console.log(`${type.toUpperCase()} DATA:`, res)
+
+  const order =
+    type === "bfs" ? res?.bfs_order : res?.dfs_order
+
+  if (!order || order.length === 0) {
+    console.error("Traversal order is empty or undefined")
+    return
+  }
 
   setVisitedNodes([])
   setActiveNode(null)
@@ -56,9 +63,6 @@ const runTraversal = async (startId, type) => {
 
   setActiveNode(null)
 }
-
-
-
 
   // start of getting gps with use effect
   useEffect(() => {
@@ -205,9 +209,8 @@ const handleSetSelectedLocation = async (loc) => {
 
       <ControlCards
         onDropPin={() => setShowNameCard(true)}
-        runBFS={() => runTraversal(activeNode, "bfs")}
-        runDFS={() => runTraversal(activeNode, "dfs")}
-        position={position}
+       runBFS={() => runTraversal(selectedLocation[0]?.backendId, "bfs")}
+       runDFS={() => runTraversal(selectedLocation[0]?.backendId, "dfs")}          position={position}
         path={path}
         selectedLocation={selectedLocation}
         panelOpen={panelOpen}
