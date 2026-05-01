@@ -8,10 +8,14 @@ import ControlCards from './components/ControlCards'
 import './config/leaflet'
 import NameCard from './NameCard'
 import { sendNodeToBackend,createEdge} from './Api'
-
+import { getBFS } from "./Api"
+import { getDFS } from "./Api"  
 
 
 function App() {
+  //state for traversals
+  const [activeNode, setActiveNode] = useState(null)
+const [visitedNodes, setVisitedNodes] = useState([])
   const [position, setPosition] = useState(null)
   const [path, setPath] = useState([])
   
@@ -31,8 +35,28 @@ function App() {
  
   const [panelOpen, setPanelOpen] = useState(true)
   
+const runTraversal = async (startId, type) => {
+  const res = type === "bfs" ? await getBFS(startId) : await getDFS(startId)
 
-  
+  const order = type === "bfs" ? res.bfs_order : res.dfs_order
+
+  setVisitedNodes([])
+  setActiveNode(null)
+
+  const visited = []
+
+  for (const nodeId of order) {
+    setActiveNode(nodeId)
+
+    visited.push(nodeId)
+    setVisitedNodes([...visited])
+
+    await new Promise((r) => setTimeout(r, 600))
+  }
+
+  setActiveNode(null)
+}
+
 
 
 
@@ -162,7 +186,8 @@ const handleSetSelectedLocation = async (loc) => {
           handleSetSelectedLocation={handleSetSelectedLocation}
           savedLocations={savedLocations}
           selectedLocation={selectedLocation}
-      
+         activeNode={activeNode}
+  visitedNodes={visitedNodes}
         />
 
         <div className="pointer-events-none absolute inset-x-0 top-0 z-[500] flex justify-start p-4">
@@ -180,7 +205,8 @@ const handleSetSelectedLocation = async (loc) => {
 
       <ControlCards
         onDropPin={() => setShowNameCard(true)}
-      
+        runBFS={() => runTraversal(activeNode, "bfs")}
+        runDFS={() => runTraversal(activeNode, "dfs")}
         position={position}
         path={path}
         selectedLocation={selectedLocation}

@@ -39,3 +39,17 @@
 
   return res.json()
 }
+
+//function to get the bfs  from  the backend
+export const getBFS = async (startId) => {
+  const res = await fetch(`${backendUrl}/graph/bfs/${startId}`)
+  if (!res.ok) throw new Error("BFS failed")
+  return res.json()
+}
+
+//function to get the dfs  from  the backend
+export const getDFS = async (startId) => {
+  const res = await fetch(`${backendUrl}/graph/dfs/${startId}`)
+  if (!res.ok) throw new Error("DFS failed")
+  return res.json()
+}

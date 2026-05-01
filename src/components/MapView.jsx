@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import {
+  
   MapContainer,
   TileLayer,
   Polyline,
@@ -10,23 +11,54 @@ import {
 import L from 'leaflet'
 import MapControls from './MapControls'
 
-const pinIcon = L.divIcon({
+//icons for BFS and DFS
+const defaultIcon = L.divIcon({
   className: 'mapout-pin-icon',
   html: `
-    <div class="mapout-pin-wrap" aria-hidden="true">
-      <svg viewBox="0 0 24 36" width="32" height="40" xmlns="http://www.w3.org/2000/svg">
+    <div class="mapout-pin-wrap">
+      <svg viewBox="0 0 24 36" width="32" height="40">
         <path fill="#2563eb" d="M12 0C7.03 0 3 4.03 3 9c0 7.5 9 18 9 18s9-10.5 9-18c0-4.97-4.03-9-9-9z"/>
         <circle cx="12" cy="9" r="4" fill="#fff"/>
       </svg>
-      <span class="mapout-pin-dot"></span>
     </div>
   `,
   iconSize: [32, 40],
   iconAnchor: [16, 40],
-  popupAnchor: [0, -36],
 })
 
+const activeIcon = L.divIcon({
+  className: 'mapout-pin-icon',
+  html: `
+    <div class="mapout-pin-wrap">
+      <svg viewBox="0 0 24 36" width="32" height="40">
+        <path fill="#ef4444" d="M12 0C7.03 0 3 4.03 3 9c0 7.5 9 18 9 18s9-10.5 9-18c0-4.97-4.03-9-9-9z"/>
+        <circle cx="12" cy="9" r="4" fill="#fff"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [32, 40],
+  iconAnchor: [16, 40],
+})
+
+const visitedIcon = L.divIcon({
+  className: 'mapout-pin-icon',
+  html: `
+    <div class="mapout-pin-wrap">
+      <svg viewBox="0 0 24 36" width="32" height="40">
+        <path fill="#22c55e" d="M12 0C7.03 0 3 4.03 3 9c0 7.5 9 18 9 18s9-10.5 9-18c0-4.97-4.03-9-9-9z"/>
+        <circle cx="12" cy="9" r="4" fill="#fff"/>
+      </svg>
+    </div>
+  `,
+  iconSize: [32, 40],
+  iconAnchor: [16, 40],
+})
+ 
+
+
 function MapView({
+  activeNode,
+  visitedNodes,
   path,
   position,
   savedLocations,
@@ -34,12 +66,18 @@ function MapView({
   selectedLocation,
   routeLinePositions,
 }) {
+
+  const getIcon=(id) => {
+   if (activeNode === id) return activeIcon
+  if (visitedNodes.includes(id)) return visitedIcon
+  return defaultIcon
+}
   const trailPositions = useMemo(() => {
     if (!path?.length) return []
     return path
   }, [path])
 
-  return (
+   return (
     <MapContainer
       center={position}
       zoom={17}
@@ -105,19 +143,22 @@ function MapView({
           }}
         />
       ))}
+ 
 
       {savedLocations?.map((loc, i) => (
-        <Marker
-          key={`${loc.name}-${i}`}
-          position={loc.coords}
-          icon={pinIcon}
-          eventHandlers={{
-            click: () => handleSetSelectedLocation(loc),
-          }}
-        >
-          <Popup className="mapout-popup">{loc.name}</Popup>
-        </Marker>
-      ))}
+  <Marker
+    key={`${loc.name}-${i}`}
+    position={loc.coords}
+    icon={getIcon(loc.backendId)}
+    eventHandlers={{
+      click: () => handleSetSelectedLocation(loc),
+    }}
+  >
+    <Popup className="mapout-popup">
+      {loc.name}
+    </Popup>
+  </Marker>
+))}
     </MapContainer>
   )
 }
