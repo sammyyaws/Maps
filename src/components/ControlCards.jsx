@@ -6,7 +6,7 @@ function ControlCards({
   selectedLocation,
   runBFS,
   runDFS,
-  
+
   panelOpen,
   onTogglePanel,
   
@@ -75,8 +75,8 @@ function ControlCards({
                 disabled={selectedLocation.length < 2}
                 title="Shortest possible path between your stops (client-side)"
                 className="mapout-btn-shortest min-h-[48px] rounded-2xl px-3 py-2.5 text-center text-sm font-semibold text-white transition disabled:cursor-not-allowed disabled:opacity-40"
-              >
-              </button>BFS TRAVERSAL
+              >BFS TRAVERSAL
+              </button>
               <button
                 type="button"
                 onClick={() => runDFS(selectedLocation[0]?.backendId)}
