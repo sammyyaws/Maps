@@ -32,15 +32,24 @@ class Graph:
             to_remove = [eid for eid, e in self.edges.items() if e.source == node_id or e.target == node_id]
             for eid in to_remove:
                 self.remove_edge(eid)
-
+    def edge_exists(self, source: int, target: int) -> bool:
+     return any(n == target for n, _ in self.adjacency.get(source, []))
     # Add a new edge (connection) between two nodes
     def add_edge(self, edge: Edge) -> Edge:
-        edge.id = self.edge_id_counter
-        self.edges[edge.id] = edge
-        self.adjacency[edge.source].append((edge.target, edge.weight))
-        self.adjacency[edge.target].append((edge.source, edge.weight))
-        self.edge_id_counter += 1
-        return edge
+     if edge.source == edge.target:
+        return edge  # ignore self-loops
+
+     if self.edge_exists(edge.source, edge.target):
+        return edge  # or raise ValueError
+
+     edge.id = self.edge_id_counter
+     self.edges[edge.id] = edge
+
+     self.adjacency[edge.source].append((edge.target, edge.weight))
+     self.adjacency[edge.target].append((edge.source, edge.weight))
+
+     self.edge_id_counter += 1
+     return edge
 
     # Remove an edge by its ID
     def remove_edge(self, edge_id: int):
